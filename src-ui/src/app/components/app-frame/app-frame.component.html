@@ -8,7 +8,7 @@
     [ngClass]="{ 'slim': slimSidebarEnabled, 'col-auto col-md-3 col-lg-2' : !slimSidebarEnabled, 'py-3' : !customAppTitle?.length || slimSidebarEnabled, 'py-2': customAppTitle?.length }"
     routerLink="/dashboard"
     tourAnchor="tour.intro">
-    <img src="/pepesmart.jpg" class="h-6 w-4" />
+    <img src="/assets/pepesmart.jpg" class="h-6 w-4" />
     <div class="ms-2 ms-md-3 d-inline-block" [class.d-md-none]="slimSidebarEnabled">
       @if (customAppTitle?.length) {
         <div class="d-flex flex-column align-items-start">
