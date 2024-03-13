@@ -4,11 +4,11 @@
     (click)="isMenuCollapsed = !isMenuCollapsed">
     <span class="navbar-toggler-icon"></span>
   </button>
-  <a class="navbar-brand d-flex align-items-center me-0 px-3 py-3 order-sm-0"
+  <a class="navbar-brand d-flex align-items-center me-0 px-3 order-sm-0"
     [ngClass]="{ 'slim': slimSidebarEnabled, 'col-auto col-md-3 col-lg-2' : !slimSidebarEnabled, 'py-3' : !customAppTitle?.length || slimSidebarEnabled, 'py-2': customAppTitle?.length }"
     routerLink="/dashboard"
     tourAnchor="tour.intro">
-    <img src="/assets/pepesmart.jpg" class="h-6 w-4" />
+    <img src="/assets/pepesmart.jpg" style="height: 2.5em" />
     <div class="ms-2 ms-md-3 d-inline-block" [class.d-md-none]="slimSidebarEnabled">
       @if (customAppTitle?.length) {
         <div class="d-flex flex-column align-items-start">
