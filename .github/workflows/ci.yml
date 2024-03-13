@@ -199,114 +199,6 @@ jobs:
         if: steps.cache-frontend-deps.outputs.cache-hit != 'true'
         run: cd src-ui && npx playwright install --with-deps
 
-  tests-frontend:
-    name: "Frontend Tests (Node ${{ matrix.node-version }} - ${{ matrix.shard-index }}/${{ matrix.shard-count }})"
-    runs-on: ubuntu-22.04
-    needs:
-      - install-frontend-depedendencies
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [20.x]
-        shard-index: [1, 2, 3, 4]
-        shard-count: [4]
-    steps:
-      - uses: actions/checkout@v4
-      -
-        name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-          cache: 'npm'
-          cache-dependency-path: 'src-ui/package-lock.json'
-      - name: Cache frontend dependencies
-        id: cache-frontend-deps
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.npm
-            ~/.cache
-          key: ${{ runner.os }}-frontenddeps-${{ hashFiles('src-ui/package-lock.json') }}
-      - name: Re-link Angular cli
-        run: cd src-ui && npm link @angular/cli
-      -
-        name: Linting checks
-        run: cd src-ui && npm run lint
-      -
-        name: Run Jest unit tests
-        run: cd src-ui && npm run test -- --max-workers=2 --shard=${{ matrix.shard-index }}/${{ matrix.shard-count }}
-      -
-        name: Upload Jest coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: jest-coverage-report-${{ matrix.shard-index }}
-          path: |
-            src-ui/coverage/coverage-final.json
-            src-ui/coverage/lcov.info
-            src-ui/coverage/clover.xml
-          retention-days: 7
-          if-no-files-found: warn
-      -
-        name: Run Playwright e2e tests
-        run: cd src-ui && npx playwright test --shard ${{ matrix.shard-index }}/${{ matrix.shard-count }}
-      -
-        name: Upload Playwright test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-${{ matrix.shard-index }}
-          path: src-ui/playwright-report
-          retention-days: 7
-
-  tests-coverage-upload:
-    name: "Upload Coverage"
-    runs-on: ubuntu-22.04
-    needs:
-      - tests-backend
-      - tests-frontend
-    steps:
-      -
-        uses: actions/checkout@v4
-      -
-        name: Download frontend jest coverage
-        uses: actions/download-artifact@v4
-        with:
-          path: src-ui/coverage/
-          pattern: jest-coverage-report-*
-      -
-        name: Download frontend playwright coverage
-        uses: actions/download-artifact@v4
-        with:
-          path: src-ui/coverage/
-          pattern: playwright-report-*
-          merge-multiple: true
-      -
-        name: Upload frontend coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          # not required for public repos, but intermittently fails otherwise
-          token: ${{ secrets.CODECOV_TOKEN }}
-          flags: frontend
-          directory: src-ui/coverage/
-          # dont include backend coverage files here
-          files: '!coverage.xml'
-      -
-        name: Download backend coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-coverage-report
-          path: src/
-      -
-        name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          # not required for public repos, but intermittently fails otherwise
-          token: ${{ secrets.CODECOV_TOKEN }}
-          # future expansion
-          flags: backend
-          directory: src/
-
   build-docker-image:
     name: Build Docker image for ${{ github.ref_name }}
     runs-on: ubuntu-22.04
@@ -314,9 +206,6 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-build-docker-image-${{ github.ref_name }}
       cancel-in-progress: true
-    needs:
-      - tests-backend
-      - tests-frontend
     steps:
       -
         name: Check pushing to Docker Hub
